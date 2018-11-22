@@ -149,23 +149,24 @@ class Decision_Node:
         self.true_branch = true_branch
         self.false_branch = false_branch
 
-def build_tree(data):
+def build_tree(data, height):
     gain, question = find_best_split(data)
 
-    if gain == 0:
+    if gain == 0 or height >= 20:
+        # print("H:", height)
         return Leaf(data)
 
     true_rows, false_rows = partition(data, question)
 
-    true_branch = build_tree(true_rows)
-    false_branch = build_tree(false_rows)
+    true_branch = build_tree(true_rows, height + 1)
+    false_branch = build_tree(false_rows, height + 1)
 
     # if t_h >= 20 or f_h >= 20: # control the height of the tree
     #     return Leaf(data)
 
     return Decision_Node(question, true_branch, false_branch)
 
-my_tree = build_tree(fruit_data)
+# my_tree = build_tree(fruit_data, 0)
 
 def print_tree(node, spacing=" "):
     if isinstance(node, Leaf):
@@ -180,3 +181,26 @@ def print_tree(node, spacing=" "):
     print_tree(node.false_branch, spacing + "  ")
 
 print_tree(my_tree)
+
+def classify(row, node):
+
+    if isinstance(node, Leaf):
+        return node.predictions
+
+    if node.question.match(row):
+        return classify(row, node.true_branch)
+    else:
+        return classify(row, node.false_branch)
+
+# print(classify(fruit_data[0], my_tree))
+
+def print_leaf(counts):
+
+    total = sum(counts.values()) * 1.0
+    probs = {}
+    for lbl in counts.keys():
+        probs[lbl] = str(int(counts[lbl] / total * 100)) + "%"
+    return probs
+
+# print(print_leaf(classify(fruit_data[0], my_tree)))
+
