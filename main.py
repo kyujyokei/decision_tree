@@ -21,12 +21,13 @@ def load_file(filename):
     for i in label:
         if i[0] == 3: i[0] = 1 # changes label 3 to 1, 5 to -1
         else: i[0] = -1;
-
+    # print("D: ", data.shape[1])
     #data = np.insert(data, 0, values=1.0, axis=1) # insert bias term
     return data
 
 
 train_d = load_file("pa3_train_reduced.csv")
+# print(train_d.shape[1])
 # print(train_d, train_l)
 
 # creates a set of all the unique values in a certain column
@@ -122,21 +123,31 @@ def find_best_split(data):
     best_gain = 0
     best_question = None
     current_uncertainty = gini(data)
-    n_features = len(data[0]) - 1
+    # n_features = len(data[0]) - 1
+    n_features = data.shape[1]
+    y_now = data[:,0]
+    # print(n_features)
+    for i in range(1, n_features): # skip column 0 because it's the feature
+        # values = set([row[col] for row in data])
+        all_ith_x = data[:,i]
+        print("I: ", i, "  ", datetime.datetime.now())
+        for j, val in enumerate(all_ith_x):
 
-    for col in range(n_features):
-        values = set([row[col] for row in data])
-        # print(col)
-        for val in values:
-            # print("     ", val)
-            question = Question(col, val)
+            # print("     ", j)
+            question = Question(i, val)
 
-            true_rows, false_rows = partition(data, question)
+            # true_rows, false_rows = partition(data, question)
+            # y_l = y_now[all_ith_x <= threshold]
+            # y_r = y_now[all_ith_x > threshold]
+            left_rows = y_now[all_ith_x <= val]
+            right_rows = y_now[all_ith_x > val]
 
-            if len(true_rows) == 0 or len(false_rows) == 0: continue
+            if len(left_rows) == 0 or len(right_rows) == 0: continue
 
-            gain = info_gain(true_rows, false_rows, current_uncertainty)
-
+            # print("A")
+            gain = info_gain(left_rows, right_rows, current_uncertainty)
+            # gain = 0
+            # print("B")
             if gain >= best_gain:
                 best_gain, best_question = gain, question
 
@@ -157,7 +168,7 @@ class Decision_Node:
 
 def build_tree(data, height):
     gain, question = find_best_split(data)
-    print("H:", height)
+    print("H:", height, datetime.datetime.now())
     if gain == 0 or height >= 20:
         print("H:", height)
         return Leaf(data)
@@ -172,7 +183,7 @@ def build_tree(data, height):
 
     return Decision_Node(question, true_branch, false_branch)
 
-my_tree = build_tree(fruit_data, 0)
+# my_tree = build_tree(fruit_data, 0)
 
 def print_tree(node, spacing=" "):
     if isinstance(node, Leaf):
