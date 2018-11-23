@@ -1,5 +1,6 @@
 import numpy as np
 import csv
+import datetime
 
 
 """
@@ -43,6 +44,7 @@ def class_counts(data):
         counts[label] += 1
     return counts
 # print(class_counts(train_d))
+class_count = class_counts(train_d)
 
 def is_numeric(val):
     return isinstance(val, int) or isinstance(val, float)
@@ -75,6 +77,7 @@ class Question:
 
 # splits the data regarding the question
 def partition(data, question):
+    # print("partition")
     true_rows, false_rows = [], []
     for row in data:
         if question.match(row):
@@ -100,6 +103,7 @@ def gini(data):
 def info_gain(left, right, current_uncertainty):
     p = float(len(left)) / (len(left) + len(right))
     return current_uncertainty - p * gini(left) - (1 - p) * gini(right)
+
 fruit_data = [
     ['Apple', 'Green', 3],
     ['Apple', 'Yellow', 3],
@@ -114,15 +118,17 @@ fruit_data = [
 # print(true_row)
 
 def find_best_split(data):
+    print("find best")
     best_gain = 0
     best_question = None
     current_uncertainty = gini(data)
     n_features = len(data[0]) - 1
 
-    for col in range(1, n_features):
+    for col in range(n_features):
         values = set([row[col] for row in data])
-
+        # print(col)
         for val in values:
+            # print("     ", val)
             question = Question(col, val)
 
             true_rows, false_rows = partition(data, question)
@@ -151,9 +157,9 @@ class Decision_Node:
 
 def build_tree(data, height):
     gain, question = find_best_split(data)
-
+    print("H:", height)
     if gain == 0 or height >= 20:
-        # print("H:", height)
+        print("H:", height)
         return Leaf(data)
 
     true_rows, false_rows = partition(data, question)
@@ -166,7 +172,7 @@ def build_tree(data, height):
 
     return Decision_Node(question, true_branch, false_branch)
 
-# my_tree = build_tree(fruit_data, 0)
+my_tree = build_tree(fruit_data, 0)
 
 def print_tree(node, spacing=" "):
     if isinstance(node, Leaf):
@@ -180,7 +186,7 @@ def print_tree(node, spacing=" "):
     print(spacing + '--> False:')
     print_tree(node.false_branch, spacing + "  ")
 
-print_tree(my_tree)
+# print_tree(my_tree)
 
 def classify(row, node):
 
@@ -204,3 +210,9 @@ def print_leaf(counts):
 
 # print(print_leaf(classify(fruit_data[0], my_tree)))
 
+print(datetime.datetime.now())
+tree = build_tree(train_d, 0)
+print(datetime.datetime.now())
+
+# for row in fruit_data:
+#     print(row[0], print_leaf(classify(row, my_tree)))
