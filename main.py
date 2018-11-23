@@ -37,7 +37,7 @@ def unique_vals(data, col):
 
 # counts the number of each type of examples in a data set, which means all the possible labels
 def class_counts(data):
-    counts = {}
+    counts = {1:0, -1:0}
     for row in data:
         label = row[0] #where the label is located
         if label not in counts:
@@ -45,7 +45,7 @@ def class_counts(data):
         counts[label] += 1
     return counts
 # print(class_counts(train_d))
-class_count = class_counts(train_d)
+# class_count = class_counts(train_d)
 
 def is_numeric(val):
     return isinstance(val, int) or isinstance(val, float)
@@ -77,21 +77,28 @@ class Question:
 # print(q.match(example))
 
 # splits the data regarding the question
-def partition(data, question):
-    # print("partition")
-    true_rows, false_rows = [], []
-    for row in data:
-        if question.match(row):
-            true_rows.append(row)
-        else:
-            false_rows.append(row)
-    return true_rows, false_rows
+# def partition(data, question):
+#     # print("partition")
+#     true_rows, false_rows = [], []
+#     for row in data:
+#         if question.match(row):
+#             true_rows.append(row)
+#         else:
+#             false_rows.append(row)
+#     return true_rows, false_rows
 # t, f = partition(train_d, Question(0, 0))
 # print(t[1])
 
 # calculates the gini impurity
 def gini(data):
-    counts = class_counts(data) #a list that counts the number of all the possible labels
+    # counts = class_counts(data) #a list that counts the number of all the possible labels
+    # count3s = data[:, 0].count(1)
+    # count5s = data[:, 0].count(-1)
+    # counts = {1: count3s, -1: count5s}
+    # print(data.shape)
+    unique, count = np.unique(data, return_counts=True)
+    counts = dict(zip(unique, count))
+    # print(counts)
     impurity = 1
     for lbl in counts:
         prob_of_lbl = counts[lbl] / float(len(data))
@@ -105,13 +112,13 @@ def info_gain(left, right, current_uncertainty):
     p = float(len(left)) / (len(left) + len(right))
     return current_uncertainty - p * gini(left) - (1 - p) * gini(right)
 
-fruit_data = [
-    ['Apple', 'Green', 3],
-    ['Apple', 'Yellow', 3],
-    ['Grape', 'Red', 1],
-    ['Grape', 'Red', 1],
-    ['Lemon', 'Yellow', 3],
-]
+# fruit_data = [
+#     ['Apple', 'Green', 3],
+#     ['Apple', 'Yellow', 3],
+#     ['Grape', 'Red', 1],
+#     ['Grape', 'Red', 1],
+#     ['Lemon', 'Yellow', 3],
+# ]
 # current_uncertainty = gini(fruit_data)
 # print(current_uncertainty)
 # true_row, false_row = partition(fruit_data, Question(1, 'Red'))
@@ -122,7 +129,7 @@ def find_best_split(data):
     print("find best")
     best_gain = 0
     best_question = None
-    current_uncertainty = gini(data)
+    current_uncertainty = gini(data[:, 0])
     # n_features = len(data[0]) - 1
     n_features = data.shape[1]
     y_now = data[:,0]
